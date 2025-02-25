@@ -7,10 +7,10 @@ class FirebaseManager {
     return FirebaseFirestore.instance
         .collection("Users")
         .withConverter<UserModel>(
-      fromFirestore: (snapshot, options) {
+      fromFirestore: (snapshot, _) {
         return UserModel.fromJson(snapshot.data()!);
       },
-      toFirestore: (user, options) {
+      toFirestore: (user, _) {
         return user.toJson();
       },
     );
@@ -43,7 +43,7 @@ class FirebaseManager {
           id: credential.user!.uid,
           email: emailAddress,
           phone: phone);
-      addUser(user);
+      await addUser(user);
       onSuccess();
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
@@ -65,18 +65,14 @@ class FirebaseManager {
     Function onLoading,
     Function onSuccess,
     Function onError,
-  ) async{
+  ) async {
     try {
       onLoading();
       final credential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: emailAddress, password: password);
-      if(credential.user!.emailVerified == true){
-        onSuccess();
-      } else {
-        onError("UnVerified Email");
-      }
+      onSuccess();
     } on FirebaseAuthException catch (e) {
-      onError(e.message);
+      onError("Wrong Email or Password");
     }
   }
 }
